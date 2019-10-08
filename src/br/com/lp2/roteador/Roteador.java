@@ -15,7 +15,7 @@ public class Roteador extends DispositivoDeRede implements Roteamento {
         p3 = new ArrayList<Pacote>();
         p4 = new ArrayList<Pacote>();
         in_out = new Pacote();
-    }        
+    }
 
     public void setIn () {
         if (p1.size() == 0 || p1.get(0).getDados().equals(in_out.getDados())) {

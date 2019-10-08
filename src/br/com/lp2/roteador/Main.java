@@ -7,14 +7,19 @@ public class Main {
 
     public static void main(String[] args) {
         Roteador[][] root = new Roteador[3][3];
+        Roteador set = new Roteador();
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 String ip = "192.168.0." + (3*i + j + 1);
-                root[i][j].setIP(ip);
-                root[i][j].setMAC("00:00:00:00:00:00");
+                set.setIP(ip);
+                set.setMAC("00:00:00:00:00:00");
+                root[i][j] = set;
+                System.out.println(root[0][0].getIP());
             }
         }
+
+
         
         try {
             RandomAccessFile com = new RandomAccessFile("comunicação.txt", "r");
@@ -35,9 +40,10 @@ public class Main {
                 for (int c = 0; c < qtd; c++) {
                     if (c == 0) tmp.setStart();
                     if (c == qtd-1) tmp.setEnd();
-                    
-                    root[fonte/3][fonte%3].set(tmp);
-                    root[fonte/3][fonte%3].setIn();
+
+                    set.set(tmp);
+                    set.setIn();
+                    root[fonte/3][fonte%3] = set;
                     tmp.reset();
                 }
             }
@@ -50,15 +56,19 @@ public class Main {
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                int saida = root[i][j].roteamento();
+                set = root[i][j];
+                int saida = set.roteamento();
                 while (saida != -1) {
-                    if (3*i + j -1 == saida-1) break;
+                    if (3*i + j == saida-1) break;
                     saida--;
-                    root[i][j].setOut();
-                    Pacote dest = root[i][j].get();
-                    root[saida/3][saida%3].set(dest);
-                    root[saida/3][saida%3].setIn();
-                    saida = root[i][j].roteamento();
+                    set.setOut();
+                    Pacote dest = set.get();
+                    Roteador r = root[saida/3][saida%3];
+                    r.set(dest);
+                    r.setIn();
+                    root[saida/3][saida%3] = r;
+                    root[i][j] = set;
+                    saida = set.roteamento();
                 }
             }
         }
@@ -66,19 +76,20 @@ public class Main {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 try {
-                    int saida = root[i][j].roteamento();
+                    set = root[i][j];
+                    int saida = set.roteamento();
                     String file_name = "192.168.0." + saida + ".txt";
                     RandomAccessFile output = new RandomAccessFile(file_name, "rw");
                     while (saida != -1) {
-                        saida--;
-                        root[i][j].setOut();
-                        Pacote txt = root[i][j].get();
+                        set.setOut();
+                        Pacote txt = set.get();
                         output.writeChars(txt.getDados() + "\n");
-                        saida = root[i][j].roteamento();
+                        root[i][j] = set;
+                        saida = set.roteamento();
                     }
                     output.close();
                 } catch (FileNotFoundException fnfe) {
-                    System.out.println("Arquivo fonte não encontrado");
+                    System.out.println("Arquivo destino não encontrado");
                 } catch (IOException ioe) {
                     System.out.println("Erro na leitura");
                 }
