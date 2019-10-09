@@ -1,37 +1,69 @@
 package br.com.lp2.roteador;
+import java.util.ArrayList;
 
-public class Pacote {
-    private int cabecalho = 0;
-    private int terminador = 0;
-    private String dados;
-    private String destino;
+public class Roteador extends DispositivoDeRede implements Roteamento {
+    private ArrayList<Pacote> p1;
+    private ArrayList<Pacote> p2;
+    private ArrayList<Pacote> p3;
+    private ArrayList<Pacote> p4;
+    private Pacote in_out;
+    
+    public Roteador() {
+        p1 = new ArrayList<Pacote>();
+        p2 = new ArrayList<Pacote>();
+        p3 = new ArrayList<Pacote>();
+        p4 = new ArrayList<Pacote>();
+        in_out = new Pacote();
+    }        
 
-    public Pacote() {
+    public void setIn () {
+        if (p1.size() == 0 || p1.get(0).getDados().equals(in_out.getDados())) {
+            p1.add(in_out);
+        }
+        else if (p1.size() > 0 && !p1.get(0).getDados().equals(in_out.getDados())) {
+            p1.add(in_out);
+        }
+        else if (p2.size() > 0 && !p2.get(0).getDados().equals(in_out.getDados())) {
+            p1.add(in_out);
+        }
+        else if (p3.size() > 0 && !p3.get(0).getDados().equals(in_out.getDados())) {
+            p1.add(in_out);
+        }
     }
-
-    public Pacote(String dados, String destino) {
-        this.dados = dados;
-        this.destino = destino;
+    
+    public Pacote get() { return in_out; }
+    
+    public void set(Pacote p) { in_out = p; }
+    
+    public void setOut () {
+        if (p1.size() > 0) {
+            in_out = p1.get(0);
+            p1.remove(0);
+        }
+        
+         else if (p2.size() > 0) {
+            in_out = p2.get(0);
+            p2.remove(0);
+        }
+        
+        else if (p3.size() > 0) {
+            in_out = p3.get(0);
+            p3.remove(0);
+        }
+        
+        else if (p4.size() > 0) {
+            in_out = p4.get(0);
+            p4.remove(0);
+        }
     }
-
-    public String getDados() { return dados; }
-
-    public void setDados(String dados) { this.dados = dados; }
-    
-    public String getDestino() { return destino; }
-    
-    public void setDestino(String destino) { this.destino = destino; }
-    
-    public boolean isStart() { return cabecalho == 1; }
-    
-    public boolean isEnd() { return terminador == 1; }
-    
-    public void setStart() { this.cabecalho = 1; }
-    
-    public void setEnd() { this.terminador = 1; }
-    
-    public void reset() {
-        cabecalho = 0;
-        terminador = 0;
+        
+    @Override
+    public int roteamento() {
+        int saida = -1;
+        if (p1.size() > 0) saida = (int) p1.get(0).getDestino().charAt(10);
+        else if (p2.size() > 0) saida = (int) p2.get(0).getDestino().charAt(10);
+        else if (p3.size() > 0) saida = (int) p3.get(0).getDestino().charAt(10);
+        else if (p4.size() > 0) saida = (int) p4.get(0).getDestino().charAt(10);
+        return saida;
     }
 }
