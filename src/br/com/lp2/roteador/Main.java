@@ -2,6 +2,7 @@ package br.com.lp2.roteador;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.File;
 
 public class Main {
 
@@ -11,6 +12,7 @@ public class Main {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 String ip = "192.168.0." + (3*i + j + 1);
+                root[i][j] = new Roteador();
                 root[i][j].setIP(ip);
                 root[i][j].setMAC("00:00:00:00:00:00");
             }
@@ -25,7 +27,8 @@ public class Main {
             while (true) {
                 line = com.readLine();
                 if (line == null) break;
-                fonte = (int) line.charAt(10) - 1;
+                char x = line.charAt(10);
+                fonte = x - '0';
                 destino = line.substring(12, 23);
                 int i = line.indexOf(" ", 24);
                 int qtd = Integer.parseInt(line.substring(24, i));
@@ -43,7 +46,7 @@ public class Main {
             }
             com.close();
         } catch (FileNotFoundException fnfe) {
-            System.out.println("Arquivo fonte não encontrado");
+            System.out.println("Arquivo fonte não encontrado. É necessário que o arquivo 'comunicação.txt' esteja na pasta deste programa.");
         } catch (IOException ioe) {
             System.out.println("Erro na leitura");
         }
@@ -51,14 +54,16 @@ public class Main {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 int saida = root[i][j].roteamento();
+                if (saida != -1) saida -= '0';
                 while (saida != -1) {
-                    if (3*i + j -1 == saida-1) break;
+                    if (3*i + j == saida-1) break;
                     saida--;
                     root[i][j].setOut();
                     Pacote dest = root[i][j].get();
                     root[saida/3][saida%3].set(dest);
                     root[saida/3][saida%3].setIn();
                     saida = root[i][j].roteamento();
+                    if (saida != -1) saida -= '0';
                 }
             }
         }
@@ -67,14 +72,15 @@ public class Main {
             for (int j = 0; j < 3; j++) {
                 try {
                     int saida = root[i][j].roteamento();
+                    if (saida != -1) saida -= '0';
                     String file_name = "192.168.0." + saida + ".txt";
                     RandomAccessFile output = new RandomAccessFile(file_name, "rw");
                     while (saida != -1) {
-                        saida--;
                         root[i][j].setOut();
                         Pacote txt = root[i][j].get();
                         output.writeChars(txt.getDados() + "\n");
                         saida = root[i][j].roteamento();
+                        if (saida != -1) saida -= '0';
                     }
                     output.close();
                 } catch (FileNotFoundException fnfe) {
@@ -83,6 +89,14 @@ public class Main {
                     System.out.println("Erro na leitura");
                 }
             }
+        }
+
+        try {
+            File garbage = new File("192.168.0.-1.txt");
+            if (garbage.delete()) System.out.println("Roteamento concluído");
+            else System.out.println("Erro");
+        } catch (SecurityException e) {
+            System.out.println("Arquivo não pode ser deletado");
         }
     }
 }
